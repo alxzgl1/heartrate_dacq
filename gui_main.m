@@ -4,13 +4,16 @@
 %-------------------------------------------------------------------------------
 function gui_main()
 
+% TODO
+% *** YLim for TimeDomain
+
 % parameters
 nMinIBI = 0.3; % seconds
 nMaxIBI = 2.0; % seconds
 
 fs = 1000; % sampling rate
 
-% Version
+% Title
 global g_SSCCaption;
 g_SSCCaption = 'Dacq HR';
 % Main 
@@ -30,30 +33,23 @@ global h_ButtonStart;
 global h_ButtonStop;
 % Popupmenu
 global h_PopupmenuAcquisition;
-% Check
-global h_CheckTimeDomain;
-global h_CheckFreqDomain;
 
 % Global variables
 global g_PopupmenuAcquisition;
-global g_CheckTimeDomain;
-global g_CheckFreqDomain;
 global g_ButtonStart;
 global g_ButtonStop;
 g_PopupmenuAcquisition = 2; % offline (default)
-g_CheckTimeDomain = 1;
-g_CheckFreqDomain = 1;
 g_ButtonStart = 0;
 g_ButtonStop = 0;
 
 % Global strings
 c_PopupmenuAcquisition = 'Online|Offline';
-g_EditLoadData = 'data_sample.txt';
-g_EditSaveData = get_filename();
-g_EditBandLow = '0.01-0.05';
-g_EditBandMid = '0.05-0.08';
-g_EditBandHigh = '0.08-0.12';
-g_EditBufLen = '30';
+c_EditLoadData = 'data_sample.txt';
+c_EditSaveData = get_filename();
+c_EditBandLow = '0.01-0.05';
+c_EditBandMid = '0.05-0.08';
+c_EditBandHigh = '0.08-0.12';
+c_EditBufLen = '30';
 
 % Configuration options
 SCREENSIZE = get(0, 'ScreenSize');
@@ -72,7 +68,6 @@ h_Main = figure('PaperType', 'a4letter', ...
   'Position', FIGURESIZE, ...
   'MenuBar', 'none');
 set(h_Main, 'Resize', 'off'); 
-% set(h_Main, 'CloseRequestFcn', 'gui_handler(''CloseMainFigure'')');
 
 % Main window frame 
 pos_frame = [0 0 WIDTH HEIGHT];
@@ -109,7 +104,7 @@ h_EditLoadData = uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
   'HorizontalAlignment', 'left', ...
   'Position', [pos_l_edit pos_t_edit pos_w_edit pos_h_edit], ...
-	'String', g_EditLoadData, ...
+	'String', c_EditLoadData, ...
   'Style', 'edit');
 % Edit 'SaveData'
 pos_t_edit = pos_frame(4) - 200;
@@ -118,7 +113,7 @@ h_EditSaveData = uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
   'HorizontalAlignment', 'left', ...
   'Position', [pos_l_edit pos_t_edit pos_w_edit pos_h_edit], ...
-	'String', g_EditSaveData, ...
+	'String', c_EditSaveData, ...
   'Style', 'edit');
 % Edit 'BandLow'
 pos_w_edit = 70;
@@ -128,7 +123,7 @@ h_EditBandLow = uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
   'HorizontalAlignment', 'left', ...
   'Position', [pos_l_edit pos_t_edit pos_w_edit pos_h_edit], ...
-	'String', g_EditBandLow, ...
+	'String', c_EditBandLow, ...
   'Style', 'edit');
 % Edit 'BandMid'
 pos_l_edit = pos_frame(1) + 40;
@@ -137,7 +132,7 @@ h_EditBandMid = uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
   'HorizontalAlignment', 'left', ...
   'Position', [pos_l_edit pos_t_edit pos_w_edit pos_h_edit], ...
-	'String', g_EditBandMid, ...
+	'String', c_EditBandMid, ...
   'Style', 'edit');
 % Edit 'BandHigh'
 pos_l_edit = pos_frame(1) + 40;
@@ -146,7 +141,7 @@ h_EditBandHigh = uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
   'HorizontalAlignment', 'left', ...
   'Position', [pos_l_edit pos_t_edit pos_w_edit pos_h_edit], ...
-	'String', g_EditBandHigh, ...
+	'String', c_EditBandHigh, ...
   'Style', 'edit');
 % Edit 'BufLen'
 pos_w_edit = 40;
@@ -156,7 +151,7 @@ h_EditBufLen = uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
   'HorizontalAlignment', 'left', ...
   'Position', [pos_l_edit pos_t_edit pos_w_edit pos_h_edit], ...
-	'String', g_EditBufLen, ...
+	'String', c_EditBufLen, ...
   'Style', 'edit');
 
 % Buttons Objects
@@ -189,27 +184,6 @@ h_PopupmenuAcquisition = uicontrol('Parent', h_Main, ...
   'String', c_PopupmenuAcquisition, ...
   'Style', 'popupmenu', ...
   'Value', g_PopupmenuAcquisition);  
-
-% Check Objects
-pos_h_check = 14;
-pos_w_check = 14;
-pos_t_check = pos_frame(4) - 20;
-% Check 'TimeDomain'
-pos_l_check = pos_frame(1) + 40;
-h_CheckTimeDomain = uicontrol('Parent', h_Main, ...
-  'Callback', 'gui_handler CheckTimeDomain', ...
-  'Position', [pos_l_check pos_t_check pos_w_check pos_h_check], ...
-  'Style', 'checkbox', ...
-  'Enable', 'off', ...
-  'Value', g_CheckTimeDomain); 
-% Check 'FreqDomain'
-pos_l_check = pos_frame(1) + 370;
-h_CheckFreqDomain = uicontrol('Parent', h_Main, ...
-  'Callback', 'gui_handler CheckFreqDomain', ...
-  'Position', [pos_l_check pos_t_check pos_w_check pos_h_check], ...
-  'Style', 'checkbox', ...
-  'Enable', 'off', ...
-  'Value', g_CheckFreqDomain); 
 
 % Text Objects
 % Text 'BandLow'
@@ -266,24 +240,29 @@ while g_ButtonStart == 0
   pause(0.001);
 end
 
-% ibit offline
-bOffline = g_PopupmenuAcquisition == 2;
+% get parameters
+iAcquisition = get(h_PopupmenuAcquisition, 'Value');
+aBandLow = get(h_EditBandLow, 'String');
+aBandMid = get(h_EditBandMid, 'String');
+aBandHigh = get(h_EditBandHigh, 'String');
+aLoadData = get(h_EditLoadData, 'String');
+aSaveData = get(h_EditSaveData, 'String');
+aBufLen = get(h_EditBufLen, 'String');
+
+% init online/offline
+bOffline = iAcquisition == 2;
 
 % init bands
-x = g_EditBandLow; i = strfind(x, '-');  fBL1 = str2double(x(1:(i - 1))); fBL2 = str2double(x((i + 1):end));
-x = g_EditBandMid; i = strfind(x, '-');  fBM1 = str2double(x(1:(i - 1))); fBM2 = str2double(x((i + 1):end));
-x = g_EditBandHigh; i = strfind(x, '-'); fBH1 = str2double(x(1:(i - 1))); fBH2 = str2double(x((i + 1):end));
+x = aBandLow;  i = strfind(x, '-'); fBL1 = str2double(x(1:(i - 1))); fBL2 = str2double(x((i + 1):end));
+x = aBandMid;  i = strfind(x, '-'); fBM1 = str2double(x(1:(i - 1))); fBM2 = str2double(x((i + 1):end));
+x = aBandHigh; i = strfind(x, '-'); fBH1 = str2double(x(1:(i - 1))); fBH2 = str2double(x((i + 1):end));
 
 % init buffer length
-nBufLen = str2double(g_EditBufLen); 
-
-% init filenames
-aLoadData = g_EditLoadData;
-aSaveData = g_EditSaveData;
+nBufLen = str2double(aBufLen); 
 
 % raw data
-pX = zeros(100000, 1); % ~12 hours
-iX = 1;
+pRawIBI = zeros(100000, 1); % ~12 hours
+iRawIBI = 1;
 
 % init
 dt = 1 / fs;
@@ -295,7 +274,7 @@ if bOffline == 0
   a = arduino(); % create session
 else
   % load(aLoadData); % FIXME
-  pX_Offline = rand(100000, 1) * 0.25 + 0.5;
+  pRawIBI_Offline = rand(100000, 1) * 0.25 + 0.5;
   iIBI_Offline = 1; % counter
   cIBI_Offline = 0; % countdown
 end
@@ -312,7 +291,7 @@ while 1
   if bOffline == 1
     % simulate IBI
     if cIBI_Offline == 0
-      tIBI_Offline = pX_Offline(iIBI_Offline); 
+      tIBI_Offline = pRawIBI_Offline(iIBI_Offline); 
       cIBI_Offline = tIBI_Offline;
     end
     cIBI_Offline = cIBI_Offline - dt;
@@ -331,11 +310,11 @@ while 1
 	if data == 1 % beat received
     tIBI = toc;
     tic;
-    % guard intreval
+    % guard interval
     iIBI = nMinIBI;
     % add IBI to raw
-    pX(iX) = tIBI;
-    iX = iX + 1;
+    pRawIBI(iRawIBI) = tIBI;
+    iRawIBI = iRawIBI + 1;
 		% add IBI to buffer
 		pBufIBI = [pBufIBI(2:end); tIBI];
 		% PSD buffer
@@ -353,8 +332,8 @@ while 1
   % stop
   if g_ButtonStop == 1
     % save data
-    pX = pX(iX);
-    save(aSaveData, 'pX');
+    pRawIBI = pRawIBI(1:iRawIBI);
+    save_data(aSaveData, pRawIBI);
     % close
     close all;
     return
@@ -370,6 +349,19 @@ function aFilename = get_filename()
 
 t = datetime(); 
 aFilename = sprintf('R_%02d%02d%02d%02d.txt', month(t), day(t), hour(t), minute(t));
+
+end % end
+
+%-------------------------------------------------------------------------------
+% Function
+%-------------------------------------------------------------------------------
+function save_data(aFilename, X)
+
+hFile = fopen(aFilename, 'w');
+for i = 1:length(X)
+  fprintf(hFile, '%1.4f\n', X(i));
+end
+fclose(hFile);
 
 end % end
 
