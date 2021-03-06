@@ -1,6 +1,6 @@
 %-------------------------------------------------------------------------------
 % Function
-% Alexander Zhigalov | a.zhigalov@gmail.com
+% Alexander Zhigalov | a.zhigalov@bham.ac.uk
 %-------------------------------------------------------------------------------
 function gui_main()
 
