@@ -4,9 +4,6 @@
 %-------------------------------------------------------------------------------
 function gui_main()
 
-% TODO
-% *** YLim for TimeDomain
-
 % parameters
 nMinIBI = 0.3; % seconds
 nMaxIBI = 2.0; % seconds
@@ -28,9 +25,11 @@ global h_EditBandLow;
 global h_EditBandMid;
 global h_EditBandHigh;
 global h_EditBufLen;
+global h_EditYLim;
 % Buttons
 global h_ButtonStart;
 global h_ButtonStop;
+global h_ButtonUpdate;
 % Popupmenu
 global h_PopupmenuAcquisition;
 
@@ -38,9 +37,11 @@ global h_PopupmenuAcquisition;
 global g_PopupmenuAcquisition;
 global g_ButtonStart;
 global g_ButtonStop;
+global g_ButtonUpdate;
 g_PopupmenuAcquisition = 2; % offline (default)
 g_ButtonStart = 0;
 g_ButtonStop = 0;
+g_ButtonUpdate = 0;
 
 % Global strings
 c_PopupmenuAcquisition = 'Online|Offline';
@@ -50,6 +51,7 @@ c_EditBandLow = '0.01-0.05';
 c_EditBandMid = '0.05-0.08';
 c_EditBandHigh = '0.08-0.12';
 c_EditBufLen = '30';
+c_EditYLim = '0-1.5';
 
 % Configuration options
 SCREENSIZE = get(0, 'ScreenSize');
@@ -95,9 +97,9 @@ h_AxesFreqDomain = axes('Parent', h_Main, ...
   'FontSize', 8);
 
 % Edits Object
-pos_w_edit = 220;
+pos_w_edit = 160;
 pos_h_edit = 21;
-pos_l_edit = pos_frame(1) + 120;
+pos_l_edit = pos_frame(1) + 180;
 % Edit 'LoadData'
 pos_t_edit = pos_frame(4) - 150; 
 h_EditLoadData = uicontrol('Parent', h_Main, ...
@@ -107,8 +109,7 @@ h_EditLoadData = uicontrol('Parent', h_Main, ...
 	'String', c_EditLoadData, ...
   'Style', 'edit');
 % Edit 'SaveData'
-pos_t_edit = pos_frame(4) - 200;
-pos_l_edit = pos_frame(1) + 120;
+pos_t_edit = pos_frame(4) - 175;
 h_EditSaveData = uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
   'HorizontalAlignment', 'left', ...
@@ -144,14 +145,24 @@ h_EditBandHigh = uicontrol('Parent', h_Main, ...
 	'String', c_EditBandHigh, ...
   'Style', 'edit');
 % Edit 'BufLen'
-pos_w_edit = 40;
-pos_l_edit = pos_frame(1) + 410;
+pos_w_edit = 25;
+pos_l_edit = pos_frame(1) + 165;
 pos_t_edit = pos_frame(4) - 200; 
 h_EditBufLen = uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
   'HorizontalAlignment', 'left', ...
   'Position', [pos_l_edit pos_t_edit pos_w_edit pos_h_edit], ...
 	'String', c_EditBufLen, ...
+  'Style', 'edit');
+% Edit 'YLim'
+pos_w_edit = 45;
+pos_l_edit = pos_frame(1) + 230;
+pos_t_edit = pos_frame(4) - 200; 
+h_EditYLim = uicontrol('Parent', h_Main, ...
+  'BackgroundColor', get(h_Main, 'Color'), ...
+  'HorizontalAlignment', 'left', ...
+  'Position', [pos_l_edit pos_t_edit pos_w_edit pos_h_edit], ...
+	'String', c_EditYLim, ...
   'Style', 'edit');
 
 % Buttons Objects
@@ -171,13 +182,20 @@ h_ButtonStop = uicontrol('Parent', h_Main, ...
   'Position', [pos_l_button pos_t_button pos_w_button pos_h_button], ...
   'String', 'Stop', ...
   'Enable', 'off');
+% Button 'Update'
+pos_t_button = pos_frame(4) - 200;
+h_ButtonUpdate = uicontrol('Parent', h_Main, ...
+  'Callback', 'gui_handler ButtonUpdate', ...
+  'Position', [pos_l_button pos_t_button pos_w_button pos_h_button], ...
+  'String', 'Update', ...
+  'Enable', 'off');
 
 % Popupmenu Objects
 % Popupmenu 'Acquisition'
 pos_h_popmenu = 23;
-pos_t_popmenu = pos_frame(4) - 175 - 2;
-pos_w_popmenu = 220;
-pos_l_popmenu = pos_frame(1) + 120;
+pos_t_popmenu = pos_frame(4) - 200 - 2;
+pos_w_popmenu = 60;
+pos_l_popmenu = pos_frame(1) + 280;
 h_PopupmenuAcquisition = uicontrol('Parent', h_Main, ...
   'Callback', 'gui_handler PopupmenuAcquisition', ...
   'Position', [pos_l_popmenu pos_t_popmenu pos_w_popmenu pos_h_popmenu], ...
@@ -226,7 +244,7 @@ uicontrol('Parent', h_Main, ...
 pos_h_text = 13;
 pos_w_text = 40;
 pos_t_text = pos_frame(4) - 200 + 4;
-pos_l_text = pos_frame(1) + 370;
+pos_l_text = pos_frame(1) + 120;
 uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
   'HorizontalAlignment', 'left', ...
@@ -234,6 +252,44 @@ uicontrol('Parent', h_Main, ...
 	'FontWeight', 'bold', ...
   'String', 'BufLen', ...
   'Style', 'text');
+% Text 'YLim'
+pos_h_text = 13;
+pos_w_text = 35;
+pos_t_text = pos_frame(4) - 200 + 4;
+pos_l_text = pos_frame(1) + 195;
+uicontrol('Parent', h_Main, ...
+  'BackgroundColor', get(h_Main, 'Color'), ...
+  'HorizontalAlignment', 'left', ...
+  'Position', [pos_l_text pos_t_text pos_w_text pos_h_text], ...
+	'FontWeight', 'bold', ...
+  'String', 'YLim', ...
+  'Style', 'text');
+
+% Text 'LoadData'
+pos_h_text = 13;
+pos_w_text = 55;
+pos_t_text = pos_frame(4) - 150 + 4;
+pos_l_text = pos_frame(1) + 120;
+uicontrol('Parent', h_Main, ...
+  'BackgroundColor', get(h_Main, 'Color'), ...
+  'HorizontalAlignment', 'left', ...
+  'Position', [pos_l_text pos_t_text pos_w_text pos_h_text], ...
+	'FontWeight', 'bold', ...
+  'String', 'Load data', ...
+  'Style', 'text');
+% Text 'SaveData'
+pos_h_text = 13;
+pos_w_text = 55;
+pos_t_text = pos_frame(4) - 175 + 4;
+pos_l_text = pos_frame(1) + 120;
+uicontrol('Parent', h_Main, ...
+  'BackgroundColor', get(h_Main, 'Color'), ...
+  'HorizontalAlignment', 'left', ...
+  'Position', [pos_l_text pos_t_text pos_w_text pos_h_text], ...
+	'FontWeight', 'bold', ...
+  'String', 'Save data', ...
+  'Style', 'text');
+
 
 % start acquisition
 while g_ButtonStart == 0
@@ -242,23 +298,18 @@ end
 
 % get parameters
 iAcquisition = get(h_PopupmenuAcquisition, 'Value');
-aBandLow = get(h_EditBandLow, 'String');
-aBandMid = get(h_EditBandMid, 'String');
-aBandHigh = get(h_EditBandHigh, 'String');
 aLoadData = get(h_EditLoadData, 'String');
 aSaveData = get(h_EditSaveData, 'String');
-aBufLen = get(h_EditBufLen, 'String');
 
 % init online/offline
 bOffline = iAcquisition == 2;
 
-% init bands
-x = aBandLow;  i = strfind(x, '-'); fBL1 = str2double(x(1:(i - 1))); fBL2 = str2double(x((i + 1):end));
-x = aBandMid;  i = strfind(x, '-'); fBM1 = str2double(x(1:(i - 1))); fBM2 = str2double(x((i + 1):end));
-x = aBandHigh; i = strfind(x, '-'); fBH1 = str2double(x(1:(i - 1))); fBH2 = str2double(x((i + 1):end));
+% update parameters
+[pBands, pYLim] = update_parameters(get(h_EditBandLow, 'String'), ...
+  get(h_EditBandMid, 'String'), get(h_EditBandHigh, 'String'), get(h_EditYLim, 'String'));
 
 % init buffer length
-nBufLen = str2double(aBufLen); 
+nBufLen = str2double(get(h_EditBufLen, 'String')); 
 
 % raw data
 pRawIBI = zeros(100000, 1); % ~12 hours
@@ -288,8 +339,15 @@ tic;
 iIBI = 0;
 f = linspace(0, 1, nBufLen);
 while 1
+  % update parameters
+  if g_ButtonUpdate == 1
+    g_ButtonUpdate = 0;
+    [pBands, pYLim] = update_parameters(get(h_EditBandLow, 'String'), ...
+      get(h_EditBandMid, 'String'), get(h_EditBandHigh, 'String'), get(h_EditYLim, 'String'));
+  end
+  % data acquisition
   if bOffline == 1
-    % simulate IBI
+    % generate IBI
     if cIBI_Offline == 0
       tIBI_Offline = pRawIBI_Offline(iIBI_Offline); 
       cIBI_Offline = tIBI_Offline;
@@ -320,7 +378,7 @@ while 1
 		% PSD buffer
 		pPsdIBI = abs(fft((pBufIBI - mean(pBufIBI)) .* W)) .^ 2;
     % plot
-    plot(h_AxesTimeDomain, pBufIBI); set(h_AxesTimeDomain, 'XLim', [1, nBufLen], 'YLim', [0.0, 1.5]);
+    plot(h_AxesTimeDomain, pBufIBI); set(h_AxesTimeDomain, 'XLim', [1, nBufLen], 'YLim', pYLim);
     plot(h_AxesFreqDomain, f, pPsdIBI); set(h_AxesFreqDomain, 'XLim', [0, 0.5]);
     drawnow;
 		% send control parameter via UDP
@@ -362,6 +420,19 @@ for i = 1:length(X)
   fprintf(hFile, '%1.4f\n', X(i));
 end
 fclose(hFile);
+
+end % end
+
+%-------------------------------------------------------------------------------
+% Function
+%-------------------------------------------------------------------------------
+function [pBands, pYLim] = update_parameters(aBandLow, aBandMid, aBandHigh, aYLim)
+
+x = aBandLow; i = strfind(x, '-'); pBL = [str2double(x(1:(i - 1))), str2double(x((i + 1):end))];
+x = aBandMid; i = strfind(x, '-'); pBM = [str2double(x(1:(i - 1))), str2double(x((i + 1):end))];
+x = aBandHigh; i = strfind(x, '-'); pBH = [str2double(x(1:(i - 1))), str2double(x((i + 1):end))];
+pBands = [pBL; pBM; pBH];
+x = aYLim; i = strfind(x, '-'); pYLim = [str2double(x(1:(i - 1))), str2double(x((i + 1):end))];
 
 end % end
 
