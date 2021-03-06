@@ -9,7 +9,7 @@ clc;
 bOffline = 1;
 
 % raw data
-pX = zeros(100000, 1); % ~12 hours | hours, min, !!!!!!!!!!!!!!!!!!!!!!
+pX = zeros(100000, 1); % ~12 hours
 iX = 1;
 
 % minimum and maximum interbeat interval (IBI)
