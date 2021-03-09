@@ -10,6 +10,16 @@ nMaxIBI = 2.0; % seconds
 
 fs = 1000; % sampling rate
 
+% default settings
+c_EditLoadData = 'data_sample.txt';
+c_EditSaveData = get_filename();
+c_EditBandLow = '0.01-0.05';
+c_EditBandMid = '0.05-0.08';
+c_EditBandHigh = '0.08-0.12';
+c_EditBufLen = '30';
+c_EditTYLim = '0-1.5';
+c_EditFYLim = '0-1.0';
+
 % Title
 global g_SSCCaption;
 g_SSCCaption = 'Dacq HR';
@@ -25,7 +35,8 @@ global h_EditBandLow;
 global h_EditBandMid;
 global h_EditBandHigh;
 global h_EditBufLen;
-global h_EditYLim;
+global h_EditTYLim;
+global h_EditFYLim;
 % Buttons
 global h_ButtonStart;
 global h_ButtonStop;
@@ -45,13 +56,6 @@ g_ButtonUpdate = 0;
 
 % Global strings
 c_PopupmenuAcquisition = 'Online|Offline';
-c_EditLoadData = 'data_sample.txt';
-c_EditSaveData = get_filename();
-c_EditBandLow = '0.01-0.05';
-c_EditBandMid = '0.05-0.08';
-c_EditBandHigh = '0.08-0.12';
-c_EditBufLen = '30';
-c_EditYLim = '0-1.5';
 
 % Configuration options
 SCREENSIZE = get(0, 'ScreenSize');
@@ -145,8 +149,8 @@ h_EditBandHigh = uicontrol('Parent', h_Main, ...
 	'String', c_EditBandHigh, ...
   'Style', 'edit');
 % Edit 'BufLen'
-pos_w_edit = 25;
-pos_l_edit = pos_frame(1) + 165;
+pos_w_edit = 70;
+pos_l_edit = pos_frame(1) + 180;
 pos_t_edit = pos_frame(4) - 200; 
 h_EditBufLen = uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
@@ -154,16 +158,27 @@ h_EditBufLen = uicontrol('Parent', h_Main, ...
   'Position', [pos_l_edit pos_t_edit pos_w_edit pos_h_edit], ...
 	'String', c_EditBufLen, ...
   'Style', 'edit');
-% Edit 'YLim'
-pos_w_edit = 45;
-pos_l_edit = pos_frame(1) + 230;
-pos_t_edit = pos_frame(4) - 200; 
-h_EditYLim = uicontrol('Parent', h_Main, ...
+% Edit 'TYLim'
+pos_w_edit = 50;
+pos_l_edit = pos_frame(1) + 290 + 1;
+pos_t_edit = pos_frame(4) - 20 - 3; 
+h_EditTYLim = uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
   'HorizontalAlignment', 'left', ...
   'Position', [pos_l_edit pos_t_edit pos_w_edit pos_h_edit], ...
-	'String', c_EditYLim, ...
+	'String', c_EditTYLim, ...
   'Style', 'edit');
+% Edit 'FYLim'
+pos_w_edit = 50;
+pos_l_edit = pos_frame(1) + 400;
+pos_t_edit = pos_frame(4) - 20 - 3; 
+h_EditFYLim = uicontrol('Parent', h_Main, ...
+  'BackgroundColor', get(h_Main, 'Color'), ...
+  'HorizontalAlignment', 'left', ...
+  'Position', [pos_l_edit pos_t_edit pos_w_edit pos_h_edit], ...
+	'String', c_EditFYLim, ...
+  'Style', 'edit', ...
+  'Enable', 'off');
 
 % Buttons Objects
 pos_w_button = 80;
@@ -194,8 +209,8 @@ h_ButtonUpdate = uicontrol('Parent', h_Main, ...
 % Popupmenu 'Acquisition'
 pos_h_popmenu = 23;
 pos_t_popmenu = pos_frame(4) - 200 - 2;
-pos_w_popmenu = 60;
-pos_l_popmenu = pos_frame(1) + 280;
+pos_w_popmenu = 85;
+pos_l_popmenu = pos_frame(1) + 255;
 h_PopupmenuAcquisition = uicontrol('Parent', h_Main, ...
   'Callback', 'gui_handler PopupmenuAcquisition', ...
   'Position', [pos_l_popmenu pos_t_popmenu pos_w_popmenu pos_h_popmenu], ...
@@ -244,7 +259,7 @@ uicontrol('Parent', h_Main, ...
 pos_h_text = 13;
 pos_w_text = 40;
 pos_t_text = pos_frame(4) - 200 + 4;
-pos_l_text = pos_frame(1) + 120;
+pos_l_text = pos_frame(1) + 135;
 uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
   'HorizontalAlignment', 'left', ...
@@ -252,11 +267,11 @@ uicontrol('Parent', h_Main, ...
 	'FontWeight', 'bold', ...
   'String', 'BufLen', ...
   'Style', 'text');
-% Text 'YLim'
+% Text 'TYLim'
 pos_h_text = 13;
-pos_w_text = 35;
-pos_t_text = pos_frame(4) - 200 + 4;
-pos_l_text = pos_frame(1) + 195;
+pos_w_text = 30;
+pos_t_text = pos_frame(4) - 20 + 1; 
+pos_l_text = pos_frame(1) + 260;
 uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
   'HorizontalAlignment', 'left', ...
@@ -264,7 +279,18 @@ uicontrol('Parent', h_Main, ...
 	'FontWeight', 'bold', ...
   'String', 'YLim', ...
   'Style', 'text');
-
+% Text 'FYLim'
+pos_h_text = 13;
+pos_w_text = 30;
+pos_t_text = pos_frame(4) - 20 + 1; 
+pos_l_text = pos_frame(1) + 370;
+uicontrol('Parent', h_Main, ...
+  'BackgroundColor', get(h_Main, 'Color'), ...
+  'HorizontalAlignment', 'left', ...
+  'Position', [pos_l_text pos_t_text pos_w_text pos_h_text], ...
+	'FontWeight', 'bold', ...
+  'String', 'YLim', ...
+  'Style', 'text');
 % Text 'LoadData'
 pos_h_text = 13;
 pos_w_text = 55;
@@ -290,7 +316,6 @@ uicontrol('Parent', h_Main, ...
   'String', 'Save data', ...
   'Style', 'text');
 
-
 % start acquisition
 while g_ButtonStart == 0
   pause(0.001);
@@ -305,15 +330,16 @@ aSaveData = get(h_EditSaveData, 'String');
 bOffline = iAcquisition == 2;
 
 % update parameters
-[pBands, pYLim] = update_parameters(get(h_EditBandLow, 'String'), ...
-  get(h_EditBandMid, 'String'), get(h_EditBandHigh, 'String'), get(h_EditYLim, 'String'));
-
+[pBands, pFXLim, pTYLim, pFYLim] = update_parameters(get(h_EditBandLow, 'String'), ...
+  get(h_EditBandMid, 'String'), get(h_EditBandHigh, 'String'), ...
+  get(h_EditTYLim, 'String'), get(h_EditFYLim, 'String'));
+    
 % init buffer length
 nBufLen = str2double(get(h_EditBufLen, 'String')); 
 
 % raw data
-pRawIBI = zeros(100000, 1); % ~12 hours
-iRawIBI = 1;
+pSamples = zeros(100000, 11); % ~12 hours
+iSamples = 1;
 
 % init
 dt = 1 / fs;
@@ -324,8 +350,11 @@ W = hann(nBufLen);
 if bOffline == 0
   a = arduino(); % create session
 else
-  % load(aLoadData); % FIXME
-  pRawIBI_Offline = rand(100000, 1) * 0.25 + 0.5;
+  if ~isempty(aLoadData)
+  	x = load(aLoadData); pSamples_Offline = x(:, 1);
+  else
+    pSamples_Offline = rand(100000, 1) * 0.25 + 0.5;
+  end
   iIBI_Offline = 1; % counter
   cIBI_Offline = 0; % countdown
 end
@@ -338,18 +367,25 @@ fopen(u);
 tic;
 iIBI = 0;
 f = linspace(0, 1, nBufLen);
+fRangeL = f >= pBands(1, 1) & f < pBands(1, 2); % low band
+fRangeM = f >= pBands(2, 1) & f < pBands(2, 2); % mid band
+fRangeH = f >= pBands(3, 1) & f < pBands(3, 2); % high band
 while 1
   % update parameters
   if g_ButtonUpdate == 1
     g_ButtonUpdate = 0;
-    [pBands, pYLim] = update_parameters(get(h_EditBandLow, 'String'), ...
-      get(h_EditBandMid, 'String'), get(h_EditBandHigh, 'String'), get(h_EditYLim, 'String'));
+    [pBands, pFXLim, pTYLim, pFYLim] = update_parameters(get(h_EditBandLow, 'String'), ...
+      get(h_EditBandMid, 'String'), get(h_EditBandHigh, 'String'), ...
+      get(h_EditTYLim, 'String'), get(h_EditFYLim, 'String'));
+    fRangeL = f >= pBands(1, 1) & f < pBands(1, 2);
+    fRangeM = f >= pBands(2, 1) & f < pBands(2, 2);
+    fRangeH = f >= pBands(3, 1) & f < pBands(3, 2);
   end
   % data acquisition
   if bOffline == 1
     % generate IBI
     if cIBI_Offline == 0
-      tIBI_Offline = pRawIBI_Offline(iIBI_Offline); 
+      tIBI_Offline = pSamples_Offline(iIBI_Offline); 
       cIBI_Offline = tIBI_Offline;
     end
     cIBI_Offline = cIBI_Offline - dt;
@@ -370,19 +406,40 @@ while 1
     tic;
     % guard interval
     iIBI = nMinIBI;
-    % add IBI to raw
-    pRawIBI(iRawIBI) = tIBI;
-    iRawIBI = iRawIBI + 1;
 		% add IBI to buffer
 		pBufIBI = [pBufIBI(2:end); tIBI];
 		% PSD buffer
-		pPsdIBI = abs(fft((pBufIBI - mean(pBufIBI)) .* W)) .^ 2;
+		pBufIBI_PSD = abs(fft((pBufIBI - mean(pBufIBI)) .* W)) .^ 2;
+    yPSD_L = mean(pBufIBI_PSD(fRangeL));
+    yPSD_M = mean(pBufIBI_PSD(fRangeM)); 
+    yPSD_H = mean(pBufIBI_PSD(fRangeH)); 
+    fPSD_L = mean(f(fRangeL)); 
+    fPSD_M = mean(f(fRangeM)); 
+    fPSD_H = mean(f(fRangeH)); 
+    % init output
+    pSamples(iSamples, 1) = tIBI;
+    pSamples(iSamples, 2) = yPSD_L; 
+    pSamples(iSamples, 3) = yPSD_M; 
+    pSamples(iSamples, 4) = yPSD_H; 
+    pSamples(iSamples, 5) = pBands(1, 1);
+    pSamples(iSamples, 6) = pBands(1, 2);
+    pSamples(iSamples, 7) = pBands(2, 1);
+    pSamples(iSamples, 8) = pBands(2, 2);
+    pSamples(iSamples, 9) = pBands(3, 1);
+    pSamples(iSamples, 10) = pBands(3, 2);
+    pSamples(iSamples, 11) = nBufLen;
+    iSamples = iSamples + 1;
     % plot
-    plot(h_AxesTimeDomain, pBufIBI); set(h_AxesTimeDomain, 'XLim', [1, nBufLen], 'YLim', pYLim);
-    plot(h_AxesFreqDomain, f, pPsdIBI); set(h_AxesFreqDomain, 'XLim', [0, 0.5]);
+    plot(h_AxesTimeDomain, pBufIBI, 'Color', 'k', 'LineWidth', 1); set(h_AxesTimeDomain, 'XLim', [1, nBufLen], 'YLim', pTYLim);
+    plot(h_AxesFreqDomain, f, pBufIBI_PSD, 'Color', [0.75, 0.75, 0.75], 'LineWidth', 1); set(h_AxesFreqDomain, 'XLim', pFXLim); 
+    hold on;
+    plot(h_AxesFreqDomain, fPSD_L, yPSD_L, 'Marker', 'o', 'LineWidth', 2, 'Color', [1.0, 0.5, 0.0]); 
+    plot(h_AxesFreqDomain, fPSD_M, yPSD_M, 'Marker', 'o', 'LineWidth', 2, 'Color', [0.0, 0.5, 0.0]); 
+    plot(h_AxesFreqDomain, fPSD_H, yPSD_H, 'Marker', 'o', 'LineWidth', 2, 'Color', [0.0, 0.5, 1.0]); 
+    hold off;
     drawnow;
 		% send control parameter via UDP
-		oscsend(u, '', 'f', tIBI);
+		oscsend(u, '', 'fff', yPSD_L, yPSD_M, yPSD_H);
   end
   % idle
   pause(dt); % should be 0.001 s
@@ -390,8 +447,8 @@ while 1
   % stop
   if g_ButtonStop == 1
     % save data
-    pRawIBI = pRawIBI(1:iRawIBI);
-    save_data(aSaveData, pRawIBI);
+    pSamples = pSamples(1:iSamples, :);
+    save_data(aSaveData, pSamples);
     % close
     close all;
     return
@@ -416,8 +473,11 @@ end % end
 function save_data(aFilename, X)
 
 hFile = fopen(aFilename, 'w');
-for i = 1:length(X)
-  fprintf(hFile, '%1.4f\n', X(i));
+for i = 1:size(X, 1)
+  for j = 1:size(X, 2)
+    fprintf(hFile, '%1.4f\t', X(i, j));
+  end
+  fprintf(hFile, '\n');
 end
 fclose(hFile);
 
@@ -426,13 +486,15 @@ end % end
 %-------------------------------------------------------------------------------
 % Function
 %-------------------------------------------------------------------------------
-function [pBands, pYLim] = update_parameters(aBandLow, aBandMid, aBandHigh, aYLim)
+function [pBands, pFXLim, pTYLim, pFYLim] = update_parameters(aBandLow, aBandMid, aBandHigh, aTYLim, aFYLim)
 
 x = aBandLow; i = strfind(x, '-'); pBL = [str2double(x(1:(i - 1))), str2double(x((i + 1):end))];
 x = aBandMid; i = strfind(x, '-'); pBM = [str2double(x(1:(i - 1))), str2double(x((i + 1):end))];
 x = aBandHigh; i = strfind(x, '-'); pBH = [str2double(x(1:(i - 1))), str2double(x((i + 1):end))];
 pBands = [pBL; pBM; pBH];
-x = aYLim; i = strfind(x, '-'); pYLim = [str2double(x(1:(i - 1))), str2double(x((i + 1):end))];
+pFXLim = [pBands(1, 1), pBands(3, 2)];
+x = aTYLim; i = strfind(x, '-'); pTYLim = [str2double(x(1:(i - 1))), str2double(x((i + 1):end))];
+x = aFYLim; i = strfind(x, '-'); pFYLim = [str2double(x(1:(i - 1))), str2double(x((i + 1):end))];
 
 end % end
 
