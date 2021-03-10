@@ -7,15 +7,19 @@ function gui_main()
 % parameters
 nMinIBI = 0.3; % seconds
 nMaxIBI = 2.0; % seconds
+nBinIBI = 0.01; % seconds
 
 fs = 1000; % sampling rate
 
 % default settings
 c_EditLoadData = 'data_sample.txt';
 c_EditSaveData = get_filename();
-c_EditBandLow =  '0.01-0.05';
-c_EditBandMid =  '0.05-0.08';
-c_EditBandHigh = '0.08-0.12';
+c_EditBandLow_S = '0.05-0.08';
+c_EditBandMid_S = '0.08-0.12';
+c_EditBandHigh_S = '0.12-0.20';
+c_EditBandLow_H = '1.2-2.0';
+c_EditBandMid_H = '0.8-1.2';
+c_EditBandHigh_H = '0.3-0.8';
 c_EditBufLen = '30';
 c_EditTYLim = '0-1.5';
 c_EditFYLim = '0-1.0';
@@ -43,19 +47,23 @@ global h_ButtonStop;
 global h_ButtonUpdate;
 % Popupmenu
 global h_PopupmenuAcquisition;
+global h_PopupmenuAnalysis;
 
 % Global variables
 global g_PopupmenuAcquisition;
+global g_PopupmenuAnalysis;
 global g_ButtonStart;
 global g_ButtonStop;
 global g_ButtonUpdate;
 g_PopupmenuAcquisition = 2; % offline (default)
+g_PopupmenuAnalysis = 1; % spectra (default)
 g_ButtonStart = 0;
 g_ButtonStop = 0;
 g_ButtonUpdate = 0;
 
 % Global strings
 c_PopupmenuAcquisition = 'Online|Offline';
+c_PopupmenuAnalysis = 'Spectra|Histogram';
 
 % Configuration options
 SCREENSIZE = get(0, 'ScreenSize');
@@ -128,7 +136,7 @@ h_EditBandLow = uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
   'HorizontalAlignment', 'left', ...
   'Position', [pos_l_edit pos_t_edit pos_w_edit pos_h_edit], ...
-	'String', c_EditBandLow, ...
+	'String', c_EditBandLow_S, ...
   'Style', 'edit');
 % Edit 'BandMid'
 pos_l_edit = pos_frame(1) + 40;
@@ -137,7 +145,7 @@ h_EditBandMid = uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
   'HorizontalAlignment', 'left', ...
   'Position', [pos_l_edit pos_t_edit pos_w_edit pos_h_edit], ...
-	'String', c_EditBandMid, ...
+	'String', c_EditBandMid_S, ...
   'Style', 'edit');
 % Edit 'BandHigh'
 pos_l_edit = pos_frame(1) + 40;
@@ -146,10 +154,10 @@ h_EditBandHigh = uicontrol('Parent', h_Main, ...
   'BackgroundColor', get(h_Main, 'Color'), ...
   'HorizontalAlignment', 'left', ...
   'Position', [pos_l_edit pos_t_edit pos_w_edit pos_h_edit], ...
-	'String', c_EditBandHigh, ...
+	'String', c_EditBandHigh_S, ...
   'Style', 'edit');
 % Edit 'BufLen'
-pos_w_edit = 70;
+pos_w_edit = 25;
 pos_l_edit = pos_frame(1) + 180;
 pos_t_edit = pos_frame(4) - 200; 
 h_EditBufLen = uicontrol('Parent', h_Main, ...
@@ -209,14 +217,25 @@ h_ButtonUpdate = uicontrol('Parent', h_Main, ...
 % Popupmenu 'Acquisition'
 pos_h_popmenu = 23;
 pos_t_popmenu = pos_frame(4) - 200 - 2;
-pos_w_popmenu = 85;
-pos_l_popmenu = pos_frame(1) + 255;
+pos_w_popmenu = 55;
+pos_l_popmenu = pos_frame(1) + 210;
 h_PopupmenuAcquisition = uicontrol('Parent', h_Main, ...
   'Callback', 'gui_handler PopupmenuAcquisition', ...
   'Position', [pos_l_popmenu pos_t_popmenu pos_w_popmenu pos_h_popmenu], ...
   'String', c_PopupmenuAcquisition, ...
   'Style', 'popupmenu', ...
   'Value', g_PopupmenuAcquisition);  
+% Popupmenu 'Analysis'
+pos_h_popmenu = 23;
+pos_t_popmenu = pos_frame(4) - 200 - 2;
+pos_w_popmenu = 70;
+pos_l_popmenu = pos_frame(1) + 270;
+h_PopupmenuAnalysis = uicontrol('Parent', h_Main, ...
+  'Callback', 'gui_handler PopupmenuAnalysis', ...
+  'Position', [pos_l_popmenu pos_t_popmenu pos_w_popmenu pos_h_popmenu], ...
+  'String', c_PopupmenuAnalysis, ...
+  'Style', 'popupmenu', ...
+  'Value', g_PopupmenuAnalysis); 
 
 % Text Objects
 % Text 'BandLow'
@@ -338,7 +357,7 @@ bOffline = iAcquisition == 2;
 nBufLen = str2double(get(h_EditBufLen, 'String')); 
 
 % raw data
-pSamples = zeros(100000, 11); % ~12 hours
+pSamples = zeros(100000, 12); % ~12 hours
 iSamples = 1;
 
 % init
@@ -365,6 +384,12 @@ end
 % open udp
 u = udp('127.0.0.1', 7400);  
 fopen(u);
+
+% histogram parameters
+pBins = nMinIBI:nBinIBI:nMaxIBI;
+nBins = length(pBins);
+BL = repmat(pBins(1:(end - 1))', 1, nBufLen);
+BH = repmat(pBins(2:end)', 1, nBufLen);
 
 % loop
 tic;
@@ -404,24 +429,34 @@ while 1
     iIBI = nMinIBI;
 		% add IBI to buffer
 		pBufIBI = [pBufIBI(2:end); tIBI];
-		% PSD buffer
-    f = linspace(0, 1, sum(pBufIBI(pBufIBI ~= 0)));
-    fRangeL = f >= pBands(1, 1) & f < pBands(1, 2); % low band
-    fRangeM = f >= pBands(2, 1) & f < pBands(2, 2); % mid band
-    fRangeH = f >= pBands(3, 1) & f < pBands(3, 2); % high band
-    pPSD_IBI = abs(fft(pBufIBI - mean(pBufIBI), length(f))) .^ 2;
+		% analysis
+    if g_PopupmenuAnalysis == 1 % spectra
+      f = linspace(0, 1, sum(pBufIBI(pBufIBI ~= 0)));
+      fRangeL = f >= pBands(1, 1) & f < pBands(1, 2); 
+      fRangeM = f >= pBands(2, 1) & f < pBands(2, 2); 
+      fRangeH = f >= pBands(3, 1) & f < pBands(3, 2); 
+      pX_IBI = abs(fft(pBufIBI - mean(pBufIBI), length(f))) .^ 2;
+      pFXLim = [0.01, 0.25];
+    else % histogram 
+      f = pBins(1:(end - 1));
+      fRangeL = f >= pBands(1, 1) & f < pBands(1, 2); 
+      fRangeM = f >= pBands(2, 1) & f < pBands(2, 2); 
+      fRangeH = f >= pBands(3, 1) & f < pBands(3, 2); 
+      pX_IBI = get_histogram(pBufIBI, BL, BH, nBins); 
+      pFXLim = [nMinIBI, nMaxIBI];
+    end
     % init bands
-    yPSD_L = mean(pPSD_IBI(fRangeL));
-    yPSD_M = mean(pPSD_IBI(fRangeM)); 
-    yPSD_H = mean(pPSD_IBI(fRangeH)); 
-    fPSD_L = mean(f(fRangeL)); 
-    fPSD_M = mean(f(fRangeM)); 
-    fPSD_H = mean(f(fRangeH)); 
+    yX_L = mean(pX_IBI(fRangeL));
+    yX_M = mean(pX_IBI(fRangeM)); 
+    yX_H = mean(pX_IBI(fRangeH)); 
+    fX_L = mean(f(fRangeL)); 
+    fX_M = mean(f(fRangeM)); 
+    fX_H = mean(f(fRangeH)); 
     % init output
     pSamples(iSamples, 1) = tIBI;
-    pSamples(iSamples, 2) = yPSD_L; 
-    pSamples(iSamples, 3) = yPSD_M; 
-    pSamples(iSamples, 4) = yPSD_H; 
+    pSamples(iSamples, 2) = yX_L; 
+    pSamples(iSamples, 3) = yX_M; 
+    pSamples(iSamples, 4) = yX_H; 
     pSamples(iSamples, 5) = pBands(1, 1);
     pSamples(iSamples, 6) = pBands(1, 2);
     pSamples(iSamples, 7) = pBands(2, 1);
@@ -429,18 +464,19 @@ while 1
     pSamples(iSamples, 9) = pBands(3, 1);
     pSamples(iSamples, 10) = pBands(3, 2);
     pSamples(iSamples, 11) = nBufLen;
+    pSamples(iSamples, 12) = g_PopupmenuAnalysis;
     iSamples = iSamples + 1;
     % plot
     plot(h_AxesTimeDomain, pBufIBI, 'Color', 'k', 'LineWidth', 1, 'Marker', 'o', 'LineStyle', '-.'); set(h_AxesTimeDomain, 'XLim', [1, nBufLen], 'YLim', pTYLim);
-    plot(h_AxesFreqDomain, f, pPSD_IBI, 'Color', [0.75, 0.75, 0.75], 'LineWidth', 1); set(h_AxesFreqDomain, 'XLim', [0.01, 0.25]); 
+    plot(h_AxesFreqDomain, f, pX_IBI, 'Color', [0.75, 0.75, 0.75], 'LineWidth', 1); set(h_AxesFreqDomain, 'XLim', pFXLim); 
     hold on;
-    plot(h_AxesFreqDomain, fPSD_L, yPSD_L, 'Marker', 'o', 'LineWidth', 2, 'Color', [1.0, 0.5, 0.0]); 
-    plot(h_AxesFreqDomain, fPSD_M, yPSD_M, 'Marker', 'o', 'LineWidth', 2, 'Color', [0.0, 0.5, 0.0]); 
-    plot(h_AxesFreqDomain, fPSD_H, yPSD_H, 'Marker', 'o', 'LineWidth', 2, 'Color', [0.0, 0.5, 1.0]); 
+    plot(h_AxesFreqDomain, fX_L, yX_L, 'Marker', 'o', 'LineWidth', 2, 'Color', [1.0, 0.5, 0.0]); 
+    plot(h_AxesFreqDomain, fX_M, yX_M, 'Marker', 'o', 'LineWidth', 2, 'Color', [0.0, 0.5, 0.0]); 
+    plot(h_AxesFreqDomain, fX_H, yX_H, 'Marker', 'o', 'LineWidth', 2, 'Color', [0.0, 0.5, 1.0]); 
     hold off;
     drawnow;
 		% send control parameter via UDP
-		oscsend(u, '', 'fff', yPSD_L, yPSD_M, yPSD_H);
+		oscsend(u, '', 'fff', yX_L, yX_M, yX_H);
   end
   % idle
   pause(dt); % should be 0.001 s
@@ -495,6 +531,19 @@ x = aBandHigh; i = strfind(x, '-'); pBH = [str2double(x(1:(i - 1))), str2double(
 pBands = [pBL; pBM; pBH];
 x = aTYLim; i = strfind(x, '-'); pTYLim = [str2double(x(1:(i - 1))), str2double(x((i + 1):end))];
 x = aFYLim; i = strfind(x, '-'); pFYLim = [str2double(x(1:(i - 1))), str2double(x((i + 1):end))];
+
+end % end
+
+%-------------------------------------------------------------------------------
+% Function
+%-------------------------------------------------------------------------------
+function H = get_histogram(pBufIBI, BL, BH, nBins)
+
+% reshape data
+Y = repmat(pBufIBI', nBins - 1, 1);
+
+% get histogram
+H = sum(Y >= BL & Y < BH, 2);
 
 end % end
 
