@@ -2,20 +2,21 @@
 % Function
 % Alexander Zhigalov | a.zhigalov@bham.ac.uk
 %-------------------------------------------------------------------------------
-function gui_main()
+function gui_main_histogram()
 
 % parameters
 nMinIBI = 0.3; % seconds
 nMaxIBI = 2.0; % seconds
+nBinIBI = 0.01; % seconds
 
 fs = 1000; % sampling rate
 
 % default settings
 c_EditLoadData = 'data_sample.txt';
 c_EditSaveData = get_filename();
-c_EditBandLow =  '0.01-0.05';
-c_EditBandMid =  '0.05-0.08';
-c_EditBandHigh = '0.08-0.12';
+c_EditBandLow =  '1.2-2.0';
+c_EditBandMid =  '0.5-1.2';
+c_EditBandHigh = '0.3-0.5';
 c_EditBufLen = '30';
 c_EditTYLim = '0-1.5';
 c_EditFYLim = '0-1.0';
@@ -352,11 +353,7 @@ else
   if ~isempty(aLoadData)
   	x = load(aLoadData); pSamples_Offline = x(:, 1);
   else
-    % random
-    % pSamples_Offline = rand(100000, 1) * 0.25 + 0.5;
-    % sin
-    f0 = 0.1;
-    pSamples_Offline = 0.5 * sin(2 * pi * f0 * (1:100000))' + 0.8;
+    pSamples_Offline = rand(100000, 1) * 0.25 + 0.5;
   end
   iIBI_Offline = 1; % counter
   cIBI_Offline = 0; % countdown
@@ -365,6 +362,18 @@ end
 % open udp
 u = udp('127.0.0.1', 7400);  
 fopen(u);
+
+% histogram parameters
+pBins = nMinIBI:nBinIBI:nMaxIBI;
+nBins = length(pBins);
+BL = repmat(pBins(1:(end - 1))', 1, nBufLen);
+BH = repmat(pBins(2:end)', 1, nBufLen);
+
+% set range
+f = pBins(1:(end - 1));
+fRangeL = f >= pBands(1, 1) & f < pBands(1, 2); % low band
+fRangeM = f >= pBands(2, 1) & f < pBands(2, 2); % mid band
+fRangeH = f >= pBands(3, 1) & f < pBands(3, 2); % high band
 
 % loop
 tic;
@@ -376,6 +385,9 @@ while 1
     [pBands, pTYLim, pFYLim] = update_parameters(get(h_EditBandLow, 'String'), ...
       get(h_EditBandMid, 'String'), get(h_EditBandHigh, 'String'), ...
       get(h_EditTYLim, 'String'), get(h_EditFYLim, 'String'));
+    fRangeL = f >= pBands(1, 1) & f < pBands(1, 2);
+    fRangeM = f >= pBands(2, 1) & f < pBands(2, 2);
+    fRangeH = f >= pBands(3, 1) & f < pBands(3, 2);
   end
   % data acquisition
   if bOffline == 1
@@ -404,24 +416,19 @@ while 1
     iIBI = nMinIBI;
 		% add IBI to buffer
 		pBufIBI = [pBufIBI(2:end); tIBI];
-		% PSD buffer
-    f = linspace(0, 1, sum(pBufIBI(pBufIBI ~= 0)));
-    fRangeL = f >= pBands(1, 1) & f < pBands(1, 2); % low band
-    fRangeM = f >= pBands(2, 1) & f < pBands(2, 2); % mid band
-    fRangeH = f >= pBands(3, 1) & f < pBands(3, 2); % high band
-    pPSD_IBI = abs(fft(pBufIBI - mean(pBufIBI), length(f))) .^ 2;
-    % init bands
-    yPSD_L = mean(pPSD_IBI(fRangeL));
-    yPSD_M = mean(pPSD_IBI(fRangeM)); 
-    yPSD_H = mean(pPSD_IBI(fRangeH)); 
-    fPSD_L = mean(f(fRangeL)); 
-    fPSD_M = mean(f(fRangeM)); 
-    fPSD_H = mean(f(fRangeH)); 
+		% get histogram 
+		pHST_IBI = get_histogram(pBufIBI, BL, BH, nBins); 
+    yHST_L = mean(pHST_IBI(fRangeL));
+    yHST_M = mean(pHST_IBI(fRangeM)); 
+    yHST_H = mean(pHST_IBI(fRangeH)); 
+    fHST_L = mean(f(fRangeL)); 
+    fHST_M = mean(f(fRangeM)); 
+    fHST_H = mean(f(fRangeH)); 
     % init output
     pSamples(iSamples, 1) = tIBI;
-    pSamples(iSamples, 2) = yPSD_L; 
-    pSamples(iSamples, 3) = yPSD_M; 
-    pSamples(iSamples, 4) = yPSD_H; 
+    pSamples(iSamples, 2) = yHST_L; 
+    pSamples(iSamples, 3) = yHST_M; 
+    pSamples(iSamples, 4) = yHST_H; 
     pSamples(iSamples, 5) = pBands(1, 1);
     pSamples(iSamples, 6) = pBands(1, 2);
     pSamples(iSamples, 7) = pBands(2, 1);
@@ -431,16 +438,16 @@ while 1
     pSamples(iSamples, 11) = nBufLen;
     iSamples = iSamples + 1;
     % plot
-    plot(h_AxesTimeDomain, pBufIBI, 'Color', 'k', 'LineWidth', 1, 'Marker', 'o', 'LineStyle', '-.'); set(h_AxesTimeDomain, 'XLim', [1, nBufLen], 'YLim', pTYLim);
-    plot(h_AxesFreqDomain, f, pPSD_IBI, 'Color', [0.75, 0.75, 0.75], 'LineWidth', 1); set(h_AxesFreqDomain, 'XLim', [0.01, 0.25]); 
+    plot(h_AxesTimeDomain, pBufIBI, 'Color', 'k', 'LineWidth', 1); set(h_AxesTimeDomain, 'XLim', [1, nBufLen], 'YLim', pTYLim);
+    plot(h_AxesFreqDomain, f, pHST_IBI, 'Color', [0.75, 0.75, 0.75], 'LineWidth', 1); set(h_AxesFreqDomain, 'XLim', [pBands(3, 1), pBands(1, 2)]); 
     hold on;
-    plot(h_AxesFreqDomain, fPSD_L, yPSD_L, 'Marker', 'o', 'LineWidth', 2, 'Color', [1.0, 0.5, 0.0]); 
-    plot(h_AxesFreqDomain, fPSD_M, yPSD_M, 'Marker', 'o', 'LineWidth', 2, 'Color', [0.0, 0.5, 0.0]); 
-    plot(h_AxesFreqDomain, fPSD_H, yPSD_H, 'Marker', 'o', 'LineWidth', 2, 'Color', [0.0, 0.5, 1.0]); 
+    plot(h_AxesFreqDomain, fHST_L, yHST_L, 'Marker', 'o', 'LineWidth', 2, 'Color', [1.0, 0.5, 0.0]); 
+    plot(h_AxesFreqDomain, fHST_M, yHST_M, 'Marker', 'o', 'LineWidth', 2, 'Color', [0.0, 0.5, 0.0]); 
+    plot(h_AxesFreqDomain, fHST_H, yHST_H, 'Marker', 'o', 'LineWidth', 2, 'Color', [0.0, 0.5, 1.0]); 
     hold off;
     drawnow;
 		% send control parameter via UDP
-		oscsend(u, '', 'fff', yPSD_L, yPSD_M, yPSD_H);
+		oscsend(u, '', 'fff', yHST_L, yHST_M, yHST_H);
   end
   % idle
   pause(dt); % should be 0.001 s
@@ -495,6 +502,19 @@ x = aBandHigh; i = strfind(x, '-'); pBH = [str2double(x(1:(i - 1))), str2double(
 pBands = [pBL; pBM; pBH];
 x = aTYLim; i = strfind(x, '-'); pTYLim = [str2double(x(1:(i - 1))), str2double(x((i + 1):end))];
 x = aFYLim; i = strfind(x, '-'); pFYLim = [str2double(x(1:(i - 1))), str2double(x((i + 1):end))];
+
+end % end
+
+%-------------------------------------------------------------------------------
+% Function
+%-------------------------------------------------------------------------------
+function H = get_histogram(pBufIBI, BL, BH, nBins)
+
+% reshape data
+Y = repmat(pBufIBI', nBins - 1, 1);
+
+% get histogram
+H = sum(Y >= BL & Y < BH, 2);
 
 end % end
 
