@@ -12,7 +12,7 @@ nBinIBI = 0.01; % seconds
 fs = 1000; % sampling rate
 
 % default settings
-c_EditLoadData = 'data_sample.txt';
+c_EditLoadData = ''; % 'data_sample.txt';
 c_EditSaveData = get_filename();
 c_EditBandLow_S = '0.05-0.08';
 c_EditBandMid_S = '0.08-0.12';
@@ -372,10 +372,10 @@ else
   	x = load(aLoadData); pSamples_Offline = x(:, 1);
   else
     % random
-    % pSamples_Offline = rand(100000, 1) * 0.25 + 0.5;
+    pSamples_Offline = rand(100000, 1) * 0.25 + 0.75;
     % sin
-    f0 = 0.1;
-    pSamples_Offline = 0.5 * sin(2 * pi * f0 * (1:100000))' + 0.8;
+    % f0 = 0.1;
+    % pSamples_Offline = 0.5 * sin(2 * pi * f0 * (1:100000))' + 0.8;
   end
   iIBI_Offline = 1; % counter
   cIBI_Offline = 0; % countdown

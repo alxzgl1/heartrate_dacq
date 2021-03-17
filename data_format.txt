@@ -1,0 +1,12 @@
+column 1: interbeat interval (in seconds)
+column 2: low-band (PSD/histogram) value
+column 3: mid-band (PSD/histogram) value
+column 4: high-band (PSD/histogram) value
+column 5: low-band range (min)
+column 6: low-band range (max)
+column 7: mid-band range (min)
+column 8: mid-band range (max)
+column 9: high-band range (min)
+column 10: high-band range (max)
+column 11: buffer length (number of interbeat intervals)
+column 12: analysis type: 1 (PSD), 2 (histogram)
