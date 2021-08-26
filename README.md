@@ -22,10 +22,11 @@ This folder contains set of scripts to read data from POLAR T34 heart rate monit
 
 ### Using/recording/streaming (OSC) real-time data from the Polar T34
 1. Under "BufLe" select **"Online"** and choose plot type (histo/spectra)
-2. Rename "Save data" field if desired
-3. Press Start
-4. Press Update to start streaming OSC
-5. Press Stop to save data to a new txt
+![gui showing online](docs/gui-online.png)
+3. Rename "Save data" field if desired
+4. Press Start
+5. Press Update to start streaming OSC
+6. Press Stop to save data to a new txt
 
 ## Receiving data in Pure Data using the [hrv-receive] object
 Instructions|Screenshot
