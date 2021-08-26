@@ -9,6 +9,10 @@ This folder contains set of scripts to read data from POLAR T34 heart rate monit
 2. Open gui_main.m
 3. Select Run to start GUI
 
+### Set up Arduino
+`coming soon`
+
+
 ### Using/recording/streaming saved data from the Polar T34
 1. Under "BufLe" select **"Offline"** and choose plot type (histo/spectra)
 2. Paste file name "R_mmddHHMM.txt" for the file you want to plot and stream in the "Load Data" field.
