@@ -1,58 +1,56 @@
-#N canvas 222 108 708 583 12;
-#X obj 17 81 netreceive -u 7400;
-#X floatatom 487 340 10 0 0 0 - gui-lf -;
+#N canvas 1623 578 708 583 12;
+#X floatatom 410 473 5 0 0 0 - gui-lf -;
 #X text 271 75 receive incoming data from UDP port 7400 (this is where
 MATLAB is sending to);
 #X obj 17 206 unpack s f f f, f 16;
-#X floatatom 487 359 10 0 0 0 - gui-mf -;
-#X floatatom 487 378 10 0 0 0 - gui-lf -;
+#X floatatom 474 473 5 0 0 0 - gui-mf -;
+#X floatatom 542 473 5 0 0 0 - gui-hf -;
 #X text 237 130 <--- incoming MATLAB data format: [symbol float float
 float(;
 #X text 191 282 <--- low frequency;
 #X text 191 336 <--- medium frequency;
 #X text 192 387 <--- high frequency;
-#X text 384 154 in english: [space lf mf hf (;
-#X obj 410 348 cnv 5 5 5 empty empty LOW-FREQUENCY 0 0 0 8 -262144
--260097 0;
-#X obj 409 326 cnv 5 5 5 empty empty HRV-RECEIVE 0 0 0 12 -262144 -66577
+#X obj 420 346 cnv 5 5 5 empty empty LOW 0 0 0 8 -262144 -260097 0
+;
+#X obj 409 316 cnv 5 5 5 empty empty HRV-RECEIVE 0 0 0 12 -262144 -66577
 0;
 #X obj 53 284 outlet;
 #X obj 89 334 outlet;
 #X obj 126 385 outlet;
-#X obj 410 369 cnv 5 5 5 empty empty MID-FREQUENCY 0 0 0 8 -262144
--18689 0;
-#X obj 410 389 cnv 5 5 5 empty empty HIGH-FREQUENCY 0 0 0 8 -262144
--1344 0;
+#X obj 486 346 cnv 5 5 5 empty empty MID 0 0 0 8 -262144 -18689 0;
+#X obj 551 346 cnv 5 5 5 empty empty HIGH 0 0 0 8 -262144 -1344 0;
 #X text 398 265 GUI for using patch in a parent patch;
-#X obj 406 410 cnv 5 5 5 empty empty LF 0 0 0 8 -262144 -66577 0;
-#X obj 482 410 cnv 5 5 5 empty empty MF 0 0 0 8 -262144 -66577 0;
-#X obj 556 410 cnv 5 5 5 empty empty HF 0 0 0 8 -262144 -66577 0;
 #X text 17 448 sam bilbow 2021 - www.sambilbow.com;
 #X obj 17 53 inlet;
-#X obj 406 308 cnv 5 5 5 empty empty PORT 0 0 0 8 -262144 -66577 0
-;
 #X obj 53 264 s gui-lf;
 #X obj 89 313 s gui-mf;
-#X obj 126 364 s gui-mf;
-#X text 594 358 live view;
-#X text 608 400 outlets;
-#X text 622 301 inlet;
-#X text 17 478 modified from max patch by alex zhigalov https://github.com/alxzgl1/heartrate_dacq/blob/main/MAX_8/HRV_osc_recv.maxpat
+#X text 614 388 live view;
+#X text 642 301 inlet;
+#X text 21 518 modified from max patch by alex zhigalov https://github.com/alxzgl1/heartrate_dacq/blob/main/MAX_8/HRV_osc_recv.maxpat
 ;
 #X text 237 199 separate incoming data into their symbol (letters \,
 don't need this) and float (numbers) counterparts and send a duplicate
 to the GUI e.g. [s gui-lf];
 #X text 15 5 hrv-receive.pd - patch that receives (default: UDP 7400)
 HRV data from MATLAB and can be used as an abstraction via GUI;
-#X obj 430 308 cnv 5 5 5 empty empty (DEFAULT:UDP-7400) 0 0 0 8 -262144
--66577 0;
 #X text 63 53 message inlet for changing port;
-#X connect 0 0 3 0;
-#X connect 3 1 13 0;
-#X connect 3 1 25 0;
-#X connect 3 2 14 0;
-#X connect 3 2 26 0;
-#X connect 3 3 15 0;
-#X connect 3 3 27 0;
-#X connect 23 0 0 0;
-#X coords 0 -1 1 1 170 120 2 400 300;
+#X obj 17 103 oscparse;
+#X obj 17 81 netreceive -u -b 7400;
+#X text 391 154 in english: [\ lf mf hf (;
+#X obj 126 364 s gui-hf;
+#X obj 421 360 vsl 15 90 0 100 0 0 empty gui-lf empty 0 -9 0 10 -261682
+-1 -1 3469 1;
+#X obj 486 360 vsl 15 90 0 100 0 0 empty gui-mf empty 0 -9 0 10 -204786
+-1 -1 3383 1;
+#X obj 553 360 vsl 15 90 0 100 0 0 empty gui-hf empty 0 -9 0 10 -134462
+-1 -1 6448 1;
+#X connect 2 1 11 0;
+#X connect 2 1 19 0;
+#X connect 2 2 12 0;
+#X connect 2 2 20 0;
+#X connect 2 3 13 0;
+#X connect 2 3 30 0;
+#X connect 18 0 28 0;
+#X connect 27 0 2 0;
+#X connect 28 0 27 0;
+#X coords 0 -1 1 1 190 200 2 400 300;

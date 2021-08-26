@@ -476,7 +476,7 @@ while 1
     hold off;
     drawnow;
 		% send control parameter via UDP
-		oscsend(u, '', 'fff', yX_L, yX_M, yX_H);
+		oscsend(u, '/', 'fff', yX_L, yX_M, yX_H);
   end
   % idle
   pause(dt); % should be 0.001 s
