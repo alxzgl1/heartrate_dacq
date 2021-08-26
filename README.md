@@ -26,7 +26,7 @@ This folder contains set of scripts to read data from POLAR T34 heart rate monit
 ## Receiving data in Pure Data using the [hrv-receive] object
 Instructions|Screenshot
 :-------------------------:|:-------------------------:
-Include the [PureData Patch (hrv-receive.pd)](pure_data/hrv-receive.pd) in an existing patch folder, and use it by creating a new object called [hrv-receive] in this 'parent' patch to use the in-built GUI. This will  monitor and receive float HRV values from the OSC messages into an existing patch! | ![pure data graphical user interface](docs/pd-gif.png) 
+Include the [PureData Patch (hrv-receive.pd)](pure_data/hrv-receive.pd) in an existing patch folder, and use it by creating a new object called [hrv-receive] in this 'parent' patch to use the in-built GUI. This will  monitor and receive float HRV values from the OSC messages into an existing patch! | ![pure data graphical user interface](docs/pd-gui.png) 
 You can open up the hrv-receive object to see the workings PureData patch (very similar to the Max patch). The patch receives float HRV values from the OSC messages on the default UDP port of 7400.  The patch is automatically set up to receive the three (low, mid, high) frequency values from MATLAB|  ![pure data patch](docs/pd-patch.png) 
 
 ## Receiving data in Max MSP
