@@ -1,20 +1,20 @@
 # Polar T34 HRV Data to Max MSP / Pure Data via OSC
 This folder contains set of scripts to read data from POLAR T34 heart rate monitor via Arduino, do some basic data processing, and send HRV OSC messages via UDP 7400 to be picked up in Max MSP or Pure Data.
 
-## Using the MATLAB Code
-1. Download and install MATLAB
-2. Install Add-ons
+## Streaming OSC data
+### Download and install MATLAB
+1. Install Add-ons
     - Instrument Control
     - Arduino
-3. Open gui_main.m
-4. Select Run to start GUI
+2. Open gui_main.m
+3. Select Run to start GUI
 
 ### Using/recording/streaming saved data from the Polar T34
 1. Under "BufLe" select **"Offline"** and choose plot type (histo/spectra)
-1. Paste file name "R_mmddHHMM.txt" for the file you want to plot and stream in the "Load Data" field.
-2. Press Start
-3. Press Update to start streaming OSC
-4. Press Stop to save data to a new txt
+2. Paste file name "R_mmddHHMM.txt" for the file you want to plot and stream in the "Load Data" field.
+3. Press Start
+4. Press Update to start streaming OSC
+5. Press Stop to save data to a new txt
 
 ### Using/recording/streaming (OSC) real-time data from the Polar T34
 1. Under "BufLe" select **"Online"** and choose plot type (histo/spectra)
