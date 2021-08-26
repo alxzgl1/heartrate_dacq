@@ -1,4 +1,4 @@
-#N canvas 543 51 708 583 12;
+#N canvas 222 108 708 583 12;
 #X obj 17 81 netreceive -u 7400;
 #X floatatom 487 340 10 0 0 0 - gui-lf -;
 #X text 271 75 receive incoming data from UDP port 7400 (this is where
@@ -13,16 +13,16 @@ float(;
 #X text 192 387 <--- high frequency;
 #X text 384 154 in english: [space lf mf hf (;
 #X obj 410 348 cnv 5 5 5 empty empty LOW-FREQUENCY 0 0 0 8 -262144
--226533 0;
+-260097 0;
 #X obj 409 326 cnv 5 5 5 empty empty HRV-RECEIVE 0 0 0 12 -262144 -66577
 0;
 #X obj 53 284 outlet;
 #X obj 89 334 outlet;
 #X obj 126 385 outlet;
 #X obj 410 369 cnv 5 5 5 empty empty MID-FREQUENCY 0 0 0 8 -262144
--226533 0;
+-18689 0;
 #X obj 410 389 cnv 5 5 5 empty empty HIGH-FREQUENCY 0 0 0 8 -262144
--226533 0;
+-1344 0;
 #X text 398 265 GUI for using patch in a parent patch;
 #X obj 406 410 cnv 5 5 5 empty empty LF 0 0 0 8 -262144 -66577 0;
 #X obj 482 410 cnv 5 5 5 empty empty MF 0 0 0 8 -262144 -66577 0;
