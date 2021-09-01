@@ -26,12 +26,12 @@ HRV data from MATLAB and can be used as an abstraction via GUI;
 #X obj 17 103 oscparse;
 #X obj 17 81 netreceive -u -b 7400;
 #X obj 126 464 s gui-hf;
-#X obj 421 360 vsl 15 90 0 100 0 0 empty gui-lf empty 0 -9 0 10 -261682
--1 -1 48 1;
-#X obj 486 360 vsl 15 90 0 100 0 0 empty gui-mf empty 0 -9 0 10 -204786
--1 -1 54 1;
-#X obj 553 360 vsl 15 90 0 100 0 0 empty gui-hf empty 0 -9 0 10 -134462
--1 -1 156 1;
+#X obj 421 360 vsl 15 90 0 8 0 0 empty gui-lf empty 0 -9 0 10 -261682
+-1 -1 0 1;
+#X obj 486 360 vsl 15 90 0 8 0 0 empty gui-mf empty 0 -9 0 10 -204786
+-1 -1 0 1;
+#X obj 553 360 vsl 15 90 0 8 0 0 empty gui-hf empty 0 -9 0 10 -134462
+-1 -1 0 1;
 #X text 168 171 in hrv terms: [\ lf mf hf (;
 #X text 171 79 <--- receive incoming data from UDP port 7400 (this
 is where MATLAB is sending to) and parse to OSC;
